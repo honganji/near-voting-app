@@ -1,0 +1,1 @@
+/Users/toshi/Programming_Work/Unchain/Near-Project/near-voting-app/contract/target/wasm32-unknown-unknown/release/greeter.wasm: /Users/toshi/Programming_Work/Unchain/Near-Project/near-voting-app/contract/src/lib.rs
