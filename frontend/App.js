@@ -1,5 +1,5 @@
 import 'regenerator-runtime/runtime'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import NEARLogo from './assets/img/logo-black.svg'
 import UNCHLogo from './assets/img/unchain_logo.png'
 import crossLogo from './assets/img/cross.png'
@@ -8,7 +8,13 @@ import './assets/css/global.css'
 
 import AppRouter from './assets/AppRouter'
 
-import { login, logout, get_greeting, set_greeting } from './assets/js/near/utils'
+import {
+  login, logout, new_default_meta, nft_mint,
+  nft_transfer, nft_add_likes_to_candidate,
+  nft_metadata, nft_tokens_for_kind, nft_token,
+  nft_return_candidate_likes,
+} from './assets/js/near/utils'
+
 import getConfig from './assets/js/near/config'
 
 
@@ -24,20 +30,23 @@ export default function App() {
 
   // The useEffect hook can be used to fire side-effects during render
   // Learn more: https://reactjs.org/docs/hooks-intro.html
-  React.useEffect(
-    () => {
-      // get_greeting is in near/utils.js
-      get_greeting()
-        .then(greetingFromContract => {
-          setGreeting(greetingFromContract)
-        })
-    },
+  // useEffect(
+  //   () => {
+  //   }, []);
 
-    // The second argument to useEffect tells React when to re-run the effect
-    // Use an empty array to specify "only run on first render"
-    // This works because signing into NEAR Wallet reloads the page
-    []
-  )
+  const getContractInfo = () => {
+    nft_metadata().then(
+      value => {
+        console.log(value)
+      }
+    )
+  }
+
+  const getCandidateInfo = (token_id) => {
+    nft_tokens_for_kind(token_id).then(value => {
+      console.log(value[1].metadata);
+    })
+  }
 
   // if not signed in, return early with sign-in prompt
   if (!window.walletConnection.isSignedIn()) {
@@ -73,20 +82,23 @@ export default function App() {
   }
 
   return (
-    <div class="bg-white min-h-screen">
-      <nav class="bg-white py-2.5">
-        <div class="container flex flex-wrap justify-between items-center mx-auto">
-          <div class="flex items-center">
+    <div className="bg-white min-h-screen">
+      <nav className="bg-white pt-2.5">
+        <div className="container flex flex-wrap justify-between items-center mx-auto">
+          <div className="flex items-center">
             <img src={NEARLogo} className="object-cover h-12 w-12" />
             <img src={crossLogo} className="object-cover h-4 w-4" />
             <img src={UNCHLogo} className="object-cover h-9 w-9 mx-2" />
-            <span class="self-center text-3xl font-semibold whitespace-nowrap dark:text-white">Vote App</span>
+            <span className="self-center text-3xl font-semibold whitespace-nowrap dark:text-white">Vote App</span>
           </div>
-          <div class="md:block md:w-auto pt-1">
+          <div className="md:block md:w-auto pt-1">
             <ul className='flex md:flex-row md:space-x-8 md:text-xl md:font-medium'>
               <li><a href='http://localhost:1234/'> Home </a></li>
               <li><a href='http://localhost:1234/candidate'> Add Candidate </a></li>
               <li><a href='http://localhost:1234/voter'> Add Voter </a></li>
+              <button className="link text-red-400" style={{ float: 'right' }} onClick={logout}>
+                Sign out
+              </button>
             </ul>
           </div>
         </div>
@@ -130,7 +142,7 @@ export default function App() {
     //       try {
     //         // make an update call to the smart contract
     //         // pass the value that the user entered in the greeting field
-    //         await set_greeting(newGreeting)
+    //         await console.log(nft_tokens());
     //       } catch (e) {
     //         alert(
     //           'Something went wrong! ' +

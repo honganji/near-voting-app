@@ -382,14 +382,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "greeter"
-version = "1.0.0"
-dependencies = [
- "near-sdk",
- "uint",
-]
-
-[[package]]
 name = "hashbrown"
 version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -628,6 +620,13 @@ dependencies = [
  "serde",
  "sha2 0.10.2",
  "sha3",
+]
+
+[[package]]
+name = "near-voting-contract"
+version = "0.1.0"
+dependencies = [
+ "near-sdk",
 ]
 
 [[package]]
