@@ -1,72 +1,87 @@
-/*
- * Example smart contract written in RUST
- *
- * Learn more about writing NEAR smart contracts with Rust:
- * https://near-docs.io/develop/Contract
- *
- */
-
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::{log, near_bindgen};
+use near_sdk::collections::{LazyOption, LookupMap, UnorderedMap, UnorderedSet};
+use near_sdk::json_types::U128;
+use near_sdk::serde::{Deserialize, Serialize};
+use near_sdk::{
+    env, near_bindgen, AccountId, Balance, CryptoHash, PanicOnDefault, Promise, PromiseOrValue,
+};
 
-// Define the default message
-const DEFAULT_MESSAGE: &str = "Hello";
+pub use crate::enumeration::*;
+use crate::internal::*;
+pub use crate::metadata::*;
+pub use crate::mint::*;
+pub use crate::nft_core::*;
 
-// Define the contract structure
+mod enumeration;
+mod internal;
+mod metadata;
+mod mint;
+mod nft_core;
+
 #[near_bindgen]
-#[derive(BorshDeserialize, BorshSerialize)]
+#[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 pub struct Contract {
-    message: String,
+    // contract state value
+    pub owner_id: AccountId,
+    pub tokens_per_owner: LookupMap<AccountId, UnorderedSet<TokenId>>,
+    pub tokens_per_kind: LookupMap<TokenKind, UnorderedSet<TokenId>>,
+    pub tokens_by_id: LookupMap<TokenId, TokenOwner>,
+    pub token_metadata_by_id: UnorderedMap<TokenId, TokenMetadata>,
+    pub metadata: LazyOption<NFTContractMetadata>,
+    pub token_id_counter: u128,
+    pub likes_per_candidate: LookupMap<TokenId, u128>,
 }
 
-// Define the default, which automatically initializes the contract
-impl Default for Contract{
-    fn default() -> Self{
-        Self{message: DEFAULT_MESSAGE.to_string()}
-    }
+#[derive(BorshSerialize)]
+pub enum StorageKey {
+    TokensPerOwner,
+    TokensPerKind,
+    TokensPerOwnerInner { account_id_hash: CryptoHash },
+    TokensPerKindInner { token_kind: TokenKind },
+    TokensById,
+    TokenMetadataById,
+    TokensPerTypeInner { token_type_hash: CryptoHash },
+    NFTContractMetadata,
+    LikesPerCandidate,
 }
 
-// Implement the contract structure
 #[near_bindgen]
 impl Contract {
-    // Public method - returns the greeting saved, defaulting to DEFAULT_MESSAGE
-    pub fn get_greeting(&self) -> String {
-        return self.message.clone();
+    // function for initialization(new_default_meta)
+    #[init]
+    pub fn new(owner_id: AccountId, metadata: NFTContractMetadata) -> Self {
+        let this = Self {
+            owner_id,
+            tokens_per_owner: LookupMap::new(StorageKey::TokensPerOwner.try_to_vec().unwrap()),
+            tokens_per_kind: LookupMap::new(StorageKey::TokensPerKind.try_to_vec().unwrap()),
+            tokens_by_id: LookupMap::new(StorageKey::TokensById.try_to_vec().unwrap()),
+            token_metadata_by_id: UnorderedMap::new(
+                StorageKey::TokenMetadataById.try_to_vec().unwrap(),
+            ),
+            metadata: LazyOption::new(
+                StorageKey::NFTContractMetadata.try_to_vec().unwrap(),
+                Some(&metadata),
+            ),
+            token_id_counter: 0,
+            likes_per_candidate: LookupMap::new(
+                StorageKey::LikesPerCandidate.try_to_vec().unwrap(),
+            ),
+        };
+
+        this
     }
 
-    // Public method - accepts a greeting, such as "howdy", and records it
-    pub fn set_greeting(&mut self, message: String) {
-        // Use env::log to record logs permanently to the blockchain!
-        log!("Saving greeting {}", message);
-        self.message = message;
-    }
-}
-
-/*
- * The rest of this file holds the inline tests for the code above
- * Learn more about Rust tests: https://doc.rust-lang.org/book/ch11-01-writing-tests.html
- */
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn get_default_greeting() {
-        let contract = Contract::default();
-        // this test did not call set_greeting so should return the default "Hello" greeting
-        assert_eq!(
-            contract.get_greeting(),
-            "Hello".to_string()
-        );
-    }
-
-    #[test]
-    fn set_then_get_greeting() {
-        let mut contract = Contract::default();
-        contract.set_greeting("howdy".to_string());
-        assert_eq!(
-            contract.get_greeting(),
-            "howdy".to_string()
-        );
+    // initialization function
+    #[init]
+    pub fn new_default_meta(owner_id: AccountId) -> Self {
+        Self::new(
+            owner_id,
+            NFTContractMetadata {
+                spec: "nft-1.0.0".to_string(),
+                name: "Near Vote Contract".to_string(),
+                icon_uri: "https://img.icons8.com/external-justicon-lineal-color-justicon/344/external-vote-voting-justicon-lineal-color-justicon.png".to_string(),
+                reference: "This contract is design for fair election!".to_string(),
+            },
+        )
     }
 }
