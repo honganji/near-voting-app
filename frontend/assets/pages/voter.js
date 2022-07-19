@@ -15,7 +15,7 @@ const Voter = () => {
     const [inputId, setInputId] = useState("");
 
     const mint = async () => {
-        await nft_mint("King(candidate)", "", "https://gateway.pinata.cloud/ipfs/QmPLdPqETJ6nFwrTWFRv8ooeBzyx5jGv73aRQtXEXNkYrJ", "QmPLdPqETJ6nFwrTWFRv8ooeBzyx5jGv73aRQtXEXNkYrJ", "King", "I will make this country strong", "candidate", `${inputId}`);
+        await nft_mint("Vote Ticket", "", "https://gateway.pinata.cloud/ipfs/QmUs5K3LwdvbhKA58bH9C6FX5Q7Bhsvvg9GRAhr9aVKLyx", "QmUs5K3LwdvbhKA58bH9C6FX5Q7Bhsvvg9GRAhr9aVKLyx", "Vote Ticket", "You can vote with this ticket! But remember that you can do it just once.", "vote", `${inputId}`);
         console.log({ inputId });
         setInputId("");
     }

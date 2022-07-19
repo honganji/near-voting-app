@@ -13,10 +13,6 @@ const CandidateCard = (props) => {
                     {props.manifest}
                 </p>
             </div>
-            <div>
-                <p>{props.likes}</p>
-            </div>
-
         </div>
     )
 
