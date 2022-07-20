@@ -4,24 +4,30 @@ import {
     nft_transfer, nft_add_likes_to_candidate,
     nft_metadata, nft_tokens_for_kind, nft_token,
     nft_return_candidate_likes, check_voter_has_been_added,
-    check_voter_has_voted, voter_voted
+    check_voter_has_voted, voter_voted, close_election, if_election_closed
 } from '../js/near/utils'
 import CandidateCard from "../component/candidate_card";
-import DeadLine from "../component/deadline";
-import { async } from "regenerator-runtime";
 import LikeIcon from '../img/like_icon.png'
 
 // home screen(you can vote here)
 const Home = () => {
-    const [candidateInfoList, setCandidateInfo] = useState();
-    const [likesList, setLikesInfo] = useState([]);
+    const [candidateInfoList, setCandidateInfoList] = useState();
+    const [candidateLikesList] = useState([]);
+    const [state, setState] = useState("fetching");
+    const State = {
+        Fetching: "fetching",
+        Fetched: "fetched",
+        Show: "show",
+        Closed: "closed"
+    }
 
-    useEffect(() => {
-        nft_tokens_for_kind("candidate").then(value => {
-            setCandidateInfo(value);
+
+    useEffect(async () => {
+        await nft_tokens_for_kind("candidate").then(value => {
+            setCandidateInfoList(value);
+            setState("fetched");
+            // { confirmClosed() }
         });
-
-
     }, [])
 
     const vote = (token_id) => {
@@ -51,8 +57,8 @@ const Home = () => {
                     <CandidateCard CID={candidateInfoList[i].metadata.media_CID} name={candidateInfoList[i].metadata.candidate_name} manifest={candidateInfoList[i].metadata.candidate_manifest} />
                     <div className="center text-xl items-center">
                         <img src={LikeIcon} className="object-cover h-5 w-5 mr-2" />
-                        <p className="mr-2">0</p>
-                        <button value={candidateInfoList[i].metadata.token_id} onClick={(event) => vote(parseInt(event.target.value))} className="h-8 px-3 py-0 my-2 font-sans text-xl font-semibold text-white transition ease-in-out bg-purple-600 border-purple-800 rounded shadow-lg shadow-purple-600/50 hover:skew-1 hover:border-purple-600">Vote!</button>
+                        <p className="mr-2">{(candidateLikesList[i])}</p>
+                        <button value={candidateInfoList[i].metadata.token_id} onClick={(event) => vote(parseInt(event.target.value))} className="vote_button hover:skew-1">Vote!</button>
                     </div>
                 </div>
 
@@ -62,18 +68,59 @@ const Home = () => {
         return candidateCardList
     }
 
-    if (candidateInfoList == undefined) {
-        return <div>wait a minute</div>
-    } else {
-        return (
-            <div>
-                <div className="grid grid-cols-3 gap-10">
-                    {generateCandidateCard()}
-                </div>
-            </div>
+    const getCandidateLikes = async () => {
+        for (let i = 0; i < candidateInfoList.length; i++) {
+            await nft_return_candidate_likes(candidateInfoList[i].metadata.token_id).then(value => {
+                candidateLikesList.push(value);
+            })
+        }
+        setState("show");
+    }
+
+    const closeButton = () => {
+        if (window.accountId !== process.env.CONTRACT_NAME) {
+            return
+        }
+        return <button className="close_button hover:skew-1 h-10 bg-red-600 mb-3" onClick={() => {
+            let isSureToClose = confirm("Are you sure to close this election?");
+            if (isSureToClose) {
+                close_election()
+            }
+        }}>Close Election</button>
+    }
+
+    const messageToWait = () => {
+        return <div className="grid h-screen place-items-center text-3xl">Fetching NFTs of candidates...</div>
+    }
 
 
-        )
+    // const confirmClosed = async () => {
+    //     let isClosed = await if_election_closed();
+    //     if (isClosed) {
+    //         console.log(isClosed);
+    //         setState("closed");
+    //     }
+    //     console.log(isClosed);
+    // }
+
+    switch (state) {
+        case State.Fetching:
+            return <div>{messageToWait()}</div>
+        case State.Fetched:
+            getCandidateLikes();
+            return <div>{messageToWait()}</div>
+        case State.Show:
+            return (
+                < div >
+                    <div className="center">{closeButton()}</div>
+
+                    <div className="grid grid-cols-3 gap-10">
+                        {generateCandidateCard()}
+                    </div>
+                </ div>
+            )
+        case State.Closed:
+            return <div>close</div>
     }
 
 }
