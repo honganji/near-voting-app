@@ -19,9 +19,9 @@ export async function initContract() {
   // Initializing our contract APIs by contract name and configuration
   window.contract = await new Contract(window.walletConnection.account(), nearConfig.contractName, {
     // View methods are read only. They don't modify the state, but usually return some value.
-    viewMethods: ['nft_metadata', 'nft_tokens_for_kind', 'nft_token', 'nft_return_candidate_likes', 'check_voter_has_been_added', 'check_voter_has_voted'],
+    viewMethods: ['nft_metadata', 'nft_tokens_for_kind', 'nft_token', 'nft_return_candidate_likes', 'check_voter_has_been_added', 'check_voter_has_voted', 'if_election_closed'],
     // Change methods can modify the state. But you don't receive the returned value when called.
-    changeMethods: ['new_default_meta', 'nft_mint', 'nft_transfer', 'nft_add_likes_to_candidate', 'voter_voted'],
+    changeMethods: ['new_default_meta', 'nft_mint', 'nft_transfer', 'nft_add_likes_to_candidate', 'voter_voted', 'close_election'],
   })
 }
 
@@ -106,12 +106,13 @@ export async function nft_token(token_id) {
 }
 
 export async function nft_return_candidate_likes(token_id) {
-  let token = await window.contract.nft_token(
+  let num_of_likes = await window.contract.nft_return_candidate_likes(
     {
       token_id: token_id
     }
   )
-  return token
+
+  return num_of_likes
 }
 
 export async function check_voter_has_been_added(voter_id) {
@@ -131,3 +132,14 @@ export async function voter_voted(voter_id) {
     { voter_id: voter_id }
   )
 }
+
+// export async function if_election_closed() {
+//   return await window.contract.if_election_closed()
+// }
+
+// export async function close_election() {
+//   await window.contract.close_election()
+// }
+// export async function reopen_election() {
+//   await window.contract.reopen_election()
+// }
