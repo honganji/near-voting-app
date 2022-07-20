@@ -4,6 +4,7 @@ use near_sdk::json_types::U128;
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{
     env, near_bindgen, AccountId, Balance, CryptoHash, PanicOnDefault, Promise, PromiseOrValue,
+    ReceiptIndex,
 };
 
 pub use crate::enumeration::*;
@@ -29,7 +30,10 @@ pub struct Contract {
     pub token_metadata_by_id: UnorderedMap<TokenId, TokenMetadata>,
     pub metadata: LazyOption<NFTContractMetadata>,
     pub token_id_counter: u128,
-    pub likes_per_candidate: LookupMap<TokenId, u128>,
+    pub likes_per_candidate: LookupMap<TokenId, Likes>,
+    pub added_voter_list: LookupMap<ReceiverId, TokenId>,
+    pub voted_voter_list: LookupMap<ReceiverId, u128>,
+    pub is_election_closed: bool,
 }
 
 #[derive(BorshSerialize)]
@@ -43,6 +47,8 @@ pub enum StorageKey {
     TokensPerTypeInner { token_type_hash: CryptoHash },
     NFTContractMetadata,
     LikesPerCandidate,
+    AddedVoterList,
+    VotedVoterList,
 }
 
 #[near_bindgen]
@@ -66,6 +72,9 @@ impl Contract {
             likes_per_candidate: LookupMap::new(
                 StorageKey::LikesPerCandidate.try_to_vec().unwrap(),
             ),
+            added_voter_list: LookupMap::new(StorageKey::AddedVoterList.try_to_vec().unwrap()),
+            voted_voter_list: LookupMap::new(StorageKey::VotedVoterList.try_to_vec().unwrap()),
+            is_election_closed: false,
         };
 
         this

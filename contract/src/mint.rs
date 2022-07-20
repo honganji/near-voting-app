@@ -9,6 +9,7 @@ impl Contract {
         metadata.token_id = Some(self.token_id_counter);
         metadata.num_of_likes = Some(0);
         let initial_storage_usage = env::storage_usage();
+        let receiver_id_clone = receiver_id.clone();
         let token = TokenOwner {
             owner_id: receiver_id,
         };
@@ -27,7 +28,9 @@ impl Contract {
         self.internal_add_token_to_owner(&token.owner_id, &token_id);
         self.internal_add_token_to_kind_map(&token_id, token_kind);
         self.likes_per_candidate
-            .insert(&self.token_id_counter, &(0 as u128));
+            .insert(&self.token_id_counter, &(0 as Likes));
+        self.added_voter_list
+            .insert(&receiver_id_clone, &self.token_id_counter);
 
         self.token_id_count();
 
