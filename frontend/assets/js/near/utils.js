@@ -21,7 +21,7 @@ export async function initContract() {
     // View methods are read only. They don't modify the state, but usually return some value.
     viewMethods: ['nft_metadata', 'nft_tokens_for_kind', 'nft_token', 'nft_return_candidate_likes', 'check_voter_has_been_added', 'check_voter_has_voted', 'if_election_closed'],
     // Change methods can modify the state. But you don't receive the returned value when called.
-    changeMethods: ['new_default_meta', 'nft_mint', 'nft_transfer', 'nft_add_likes_to_candidate', 'voter_voted', 'close_election'],
+    changeMethods: ['new_default_meta', 'nft_mint', 'nft_transfer', 'nft_add_likes_to_candidate', 'voter_voted', 'close_election', 'reopen_election'],
   })
 }
 
@@ -133,13 +133,13 @@ export async function voter_voted(voter_id) {
   )
 }
 
-// export async function if_election_closed() {
-//   return await window.contract.if_election_closed()
-// }
+export async function if_election_closed() {
+  return await window.contract.if_election_closed()
+}
 
-// export async function close_election() {
-//   await window.contract.close_election()
-// }
-// export async function reopen_election() {
-//   await window.contract.reopen_election()
-// }
+export async function close_election() {
+  await window.contract.close_election()
+}
+export async function reopen_election() {
+  await window.contract.reopen_election()
+}

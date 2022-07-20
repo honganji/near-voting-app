@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import NEARLogo from './assets/img/logo-black.svg'
 import UNCHLogo from './assets/img/unchain_logo.png'
 import crossLogo from './assets/img/cross.png'
+import TopImage from './assets/img/top_img.avif'
 
 import './assets/css/global.css'
 
@@ -45,33 +46,17 @@ export default function App() {
   // if not signed in, return early with sign-in prompt
   if (!window.walletConnection.isSignedIn()) {
     return (
-      <main className='grid h-screen place-items-center text-3xl'>
-        <h1>
-          <label
-            htmlFor="greeting"
-            style={{
-              color: 'var(--secondary)',
-              borderBottom: '2px solid var(--secondary)'
-            }}
-          >
-            {greeting}
-          </label>!
-          Welcome to NEAR!
-        </h1>
-        <p>
-          Your contract is storing a greeting message in the NEAR blockchain. To
-          change it you need to sign in using the NEAR Wallet. It is very simple,
-          just use the button below.
-        </p>
-        <p>
-          Do not worry, this app runs in the test network ("testnet"). It works
-          just like the main network ("mainnet"), but using NEAR Tokens that are
-          only for testing!
-        </p>
-        <p style={{ textAlign: 'center', marginTop: '2.5em' }}>
-          <button onClick={login}>Sign in</button>
-        </p>
-      </main>
+      <div className='grid h-3/4 place-items-center'>
+        <div className="flex items-center">
+          <img src={NEARLogo} className="object-cover h-16 w-16" />
+          <img src={crossLogo} className="object-cover h-6 w-6" />
+          <img src={UNCHLogo} className="object-cover h-12 w-12 mx-2" />
+          <span className="self-center text-3xl font-semibold whitespace-nowrap app_title">Election Dapp</span>
+        </div>
+        <div className="text-3xl">Have a liberate and fair election!</div>
+        <img src={TopImage} className="mb-4 h-5/6 w-1/2" />
+        <button className='text-white w-2/5 h-12 bg-gradient-to-r from-rose-500 via-rose-600 to-rose-800 hover:bg-gradient-to-br focus:ring-4 focus:outline-none font-medium rounded-lg text-3xl text-center ' onClick={login}>Sign in</button>
+      </div>
     )
   }
 
